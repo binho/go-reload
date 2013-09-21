@@ -8,7 +8,7 @@
 # Watch all *.go files in the specified directory
 # Call the restart function when they are saved
 function monitor() {
-    fswatch $1 "echo \">> Reloading... \" && go run $FILE_PATH &"
+    fswatch $1 "echo '>> Reloading...' && go run $FILE_PATH &"
 }
 
 # Make sure all background processes get terminated
