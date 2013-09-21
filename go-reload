@@ -1,28 +1,21 @@
 #!/bin/bash
 
+
+# Ported to use "fswatch" (https://github.com/alandipert/fswatch)
+# install details at http://stackoverflow.com/a/13807906
+
+
 # Watch all *.go files in the specified directory
 # Call the restart function when they are saved
 function monitor() {
-  inotifywait -q -m -r -e close_write --exclude '[^g][^o]$' $1 |
-  while read line; do
-    restart
-  done
-}
-
-# Terminate and rerun the main Go program
-function restart {
-  if [ "$(pidof $PROCESS_NAME)" ]; then
-    killall -q -w -9 $PROCESS_NAME
-  fi
-  echo ">> Reloading..."
-  go run $FILE_PATH &
+    fswatch $1 "echo \">> Reloading... \" && go run $FILE_PATH &"
 }
 
 # Make sure all background processes get terminated
 function close {
-  killall -q -w -9 inotifywait
-  killall -q -w -9 go-reload
-  exit 0
+    killall -9 fswatch
+    killall -9 go-reload
+    exit 0
 }
 
 trap close INT
@@ -41,7 +34,8 @@ OIFS="$IFS"
 IFS=':'
 for path in $GOPATH
 do
-  monitor $path/src &
+    echo "PATH: " $path
+    monitor $path/src &
 done
 IFS="$OIFS"
 
